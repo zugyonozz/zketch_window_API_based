@@ -1,4 +1,4 @@
-#include "../includes/z_window.h"
+#include "../include/z_window.h"
 
 class MyWindow : public z::Window<MyWindow> {
 public:

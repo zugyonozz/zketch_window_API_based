@@ -30,7 +30,7 @@ public:
     }
 
     // Basic rectangle (hanya outline dengan default stroke)
-    template <Mode mode = Mode::BOTH> void drawRect(z::Bound<int> bound) {
+    template <Mode mode = Mode::BOTH> void drawRect(Rect<int> bound) {
 		if(mode == Mode::STROKE)
         	drawRectInternal(bound, RGB(0,0,0), RGB(255,255,255), false, true, 1);
 		else if (mode == Mode::FILL)
@@ -40,17 +40,17 @@ public:
     }
 
     // Rectangle dengan stroke color dan width
-    void drawRect(z::Bound<int> bound, COLORREF strokeColor, int strokeWidth = 1) {
+    void drawRect(Rect<int> bound, COLORREF strokeColor, int strokeWidth = 1) {
         drawRectInternal(bound, RGB(0,0,0), strokeColor, false, true, strokeWidth);
     }
 
     // Rectangle dengan fill color saja
-    void drawRect(int x, int y, int w, int h, COLORREF fillColor) {
+    void drawRect(Rect<int>, COLORREF fillColor) {
         drawRectInternal(x, y, w, h, fillColor, RGB(0,0,0), true, false, 1);
     }
 
     // Rectangle dengan fill color dan stroke
-    void drawRect(int x, int y, int w, int h, COLORREF fillColor, COLORREF strokeColor, int strokeWidth = 1) {
+    void drawRect(Rect<int>, COLORREF fillColor, COLORREF strokeColor, int strokeWidth = 1) {
         drawRectInternal(x, y, w, h, fillColor, strokeColor, true, true, strokeWidth);
     }
 
@@ -161,7 +161,7 @@ private:
         }
     }
 
-    void drawRectInternal(z::Bound<int> bound, COLORREF fillColor, COLORREF strokeColor, bool hasFill, bool hasStroke, int strokeWidth) {
+    void drawRectInternal(Rect<int> bound, COLORREF fillColor, COLORREF strokeColor, bool hasFill, bool hasStroke, int strokeWidth) {
         HBRUSH brush = nullptr;
         HPEN pen = nullptr;
         HBRUSH oldBrush = nullptr;

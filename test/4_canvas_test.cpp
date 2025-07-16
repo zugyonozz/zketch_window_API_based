@@ -1,7 +1,7 @@
-#include "../includes/z_window.h"
-#include "../includes/z_canvas.h"
-#include "../includes/z_timer.h"
-#include "../includes/z_event_util.h"
+#include "../include/z_window.h"
+#include "../include/z_canvas.h"
+#include "../include/z_timer.h"
+#include "../include/z_event_util.h"
 
 class GameWindow : public z::Window<GameWindow> {
 public:

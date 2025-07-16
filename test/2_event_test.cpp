@@ -1,6 +1,6 @@
 #include <cstdio>
-#include "../includes/z_window.h"
-#include "../includes/z_event_util.h"
+#include "../include/z_window.h"
+#include "../include/z_event_util.h"
 
 class MyWindow : public z::Window<MyWindow> {
 public:
