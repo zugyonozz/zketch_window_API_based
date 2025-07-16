@@ -23,7 +23,7 @@ struct Particle {
         : position(pos), velocity(vel), color(col), life(1.0f) {}
     
     void update(float dt) {
-        position = position + velocity * dt;
+        position = position + velocity * Vec2<float>(dt) ;
         life -= dt * 0.5f; // Partikel hilang dalam 2 detik
         
         // Fade out
@@ -160,12 +160,12 @@ int main() {
             canvas.clear(bgColor);
             
             // Draw background grid
-            Color<unsigned char> gridColor(40, 40, 50, 255);
+            // Color<unsigned char> gridColor(40, 40, 50, 255);
             for (int x = 0; x < windowSize.x; x += 50) {
-                canvas.drawLine(x, 0, x, windowSize.y, gridColor);
+                canvas.drawLine(x, 0, x, windowSize.y, RGB(40, 40, 50));
             }
             for (int y = 0; y < windowSize.y; y += 50) {
-                canvas.drawLine(0, y, windowSize.x, y, gridColor);
+                canvas.drawLine(0, y, windowSize.x, y, RGB(40, 40, 50));
             }
             
             // Draw shapes
@@ -179,10 +179,8 @@ int main() {
             }
             
             // Draw mouse cursor
-            canvas.drawLine(mousePos.x - 10, mousePos.y, mousePos.x + 10, mousePos.y, 
-                           Color<unsigned char>(255, 255, 0, 255), 2);
-            canvas.drawLine(mousePos.x, mousePos.y - 10, mousePos.x, mousePos.y + 10, 
-                           Color<unsigned char>(255, 255, 0, 255), 2);
+            canvas.drawLine(mousePos.x - 10, mousePos.y, mousePos.x + 10, mousePos.y, RGB(255, 255, 0), 2) ;
+            canvas.drawLine(mousePos.x, mousePos.y - 10, mousePos.x, mousePos.y + 10, RGB(255, 255, 0), 2) ;
             
             // Draw some polygons
             Vec2<int> trianglePoints[] = {
@@ -190,25 +188,24 @@ int main() {
                 {windowSize.x - 50, 50},
                 {windowSize.x - 75, 100}
             };
-            canvas.fillPolygon(trianglePoints, 3, Color<unsigned char>(255, 255, 0, 255));
+            canvas.fillPolygon(trianglePoints, 3, RGB(255, 255, 0));
             
             // Draw info text using basic pixel drawing (since no text API in headers)
             // This is a simple way to show some info
-            Color<unsigned char> infoColor(255, 255, 255, 255);
+            // Color<unsigned char> infoColor(255, 255, 255, 255);
             
             // Draw simple "FPS" indicator using rectangles
             float fps = 1.0f / deltaTime;
             int fpsBarWidth = static_cast<int>(fps * 2);
             if (fpsBarWidth > 200) fpsBarWidth = 200;
             
-            canvas.fillRect(10, 10, 200, 20, Color<unsigned char>(50, 50, 50, 255));
-            canvas.fillRect(10, 10, fpsBarWidth, 20, 
-                           fps > 30 ? Color<unsigned char>(0, 255, 0, 255) : Color<unsigned char>(255, 0, 0, 255));
+            canvas.fillRect(10, 10, 200, 20, RGB(50, 50, 50));
+            canvas.fillRect(10, 10, fpsBarWidth, 20, fps > 30 ? RGB(0, 255, 0) : RGB(255, 0, 0));
             
             // Draw particle count indicator
             int particleBarWidth = static_cast<int>(particles.size() * 0.4f);
-            canvas.fillRect(10, 35, 200, 15, Color<unsigned char>(50, 50, 50, 255));
-            canvas.fillRect(10, 35, particleBarWidth, 15, Color<unsigned char>(0, 100, 255, 255));
+            canvas.fillRect(10, 35, 200, 15, RGB(50, 50, 50));
+            canvas.fillRect(10, 35, particleBarWidth, 15, RGB(0, 100, 255));
             
             // Present the frame
             canvas.present();

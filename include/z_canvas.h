@@ -330,7 +330,7 @@ public:
 
     // Convert COLORREF to Color
     static Color<unsigned char> fromColorRef(COLORREF color) {
-        return Color<unsigned char>(GetRValue(color), GetGValue(color), GetBValue(color), 255);
+        return Color<unsigned char>(static_cast<int>(GetRValue(color)), static_cast<int>(GetGValue(color)), static_cast<int>(GetBValue(color)), 255);
     }
 
     // Get canvas size
@@ -344,7 +344,7 @@ public:
     Rect<int> getBounds() const {
         RECT rect;
         GetClientRect(m_hwnd, &rect);
-        return Rect<int>(0, 0, rect.right - rect.left, rect.bottom - rect.top);
+        return Rect<int>(0, 0, static_cast<int>(rect.right - rect.left), static_cast<int>(rect.bottom - rect.top));
     }
 
 private:

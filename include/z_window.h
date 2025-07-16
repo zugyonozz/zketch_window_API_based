@@ -207,7 +207,7 @@ public:
     Rect<int> getClientBounds() const {
         RECT rect;
         GetClientRect(m_hwnd, &rect);
-        return Rect<int>(0, 0, rect.right - rect.left, rect.bottom - rect.top);
+        return Rect<int>(0, 0, static_cast<int>(rect.right - rect.left), static_cast<int>(rect.bottom - rect.top));
     }
 
     // Center window on screen
