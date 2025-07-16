@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include <windows.h>
 
 template <typename T> struct is_defined_Vec2_variants {
 	static constexpr bool value = false ;
