@@ -106,7 +106,7 @@ int main() {
             canvas.clear(RGB(30, 30, 30));
             
             // Draw player using Canvas with Rect
-            // canvas.drawRect(playerBounds, RGB(playerColor.r, playerColor.g, playerColor.b));
+            canvas.drawRect(playerBounds, RGB(playerColor.r, playerColor.g, playerColor.b));
             
             // Draw some additional shapes using z_unit types
             Rect<int> borderRect(10, 10, clientSize.x - 20, clientSize.y - 20);
