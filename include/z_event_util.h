@@ -1,5 +1,6 @@
 #pragma once
 #include "z_event.h"
+#include "z_unit.h"
 
 namespace z {
 
@@ -71,6 +72,42 @@ inline Event translateWinEvent(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
     }
 
     return ev;
+}
+
+// Helper functions for working with Events and z_unit types
+inline Vec2<int> getEventPosition(const Event& event) {
+    return event.getMousePosition();
+}
+
+inline Vec2<int> getEventSize(const Event& event) {
+    return event.getResizeSize();
+}
+
+// Create mouse event with Vec2 position
+inline Event createMouseEvent(EventType type, Vec2<int> position, MouseButton button) {
+    Event event;
+    event.type = type;
+    event.mouse.x = position.x;
+    event.mouse.y = position.y;
+    event.mouse.button = button;
+    return event;
+}
+
+// Create resize event with Vec2 size
+inline Event createResizeEvent(Vec2<int> size) {
+    Event event;
+    event.type = EventType::Resize;
+    event.resize.width = size.x;
+    event.resize.height = size.y;
+    return event;
+}
+
+// Create key event
+inline Event createKeyEvent(EventType type, int keyCode) {
+    Event event;
+    event.type = type;
+    event.key.keyCode = keyCode;
+    return event;
 }
 
 }

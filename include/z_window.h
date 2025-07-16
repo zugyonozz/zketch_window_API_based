@@ -6,6 +6,7 @@
 #include <queue>
 #include "z_event.h"
 #include "z_event_util.h"
+#include "z_unit.h"
 
 namespace z {
 
@@ -13,12 +14,32 @@ class Window {
 public:
     // Constructor - simple and straightforward
     Window(const char* title, int width, int height) 
-        : m_width(width), m_height(height), m_title(title) {
+        : m_size(width, height), m_title(title) {
         m_hInstance = GetModuleHandle(nullptr);
         registerWindowClass();
         createWindow();
         
         // Set this pointer untuk callback
+        SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
+    }
+
+    // Constructor with Vec2 size
+    Window(const char* title, Vec2<int> size) 
+        : m_size(size), m_title(title) {
+        m_hInstance = GetModuleHandle(nullptr);
+        registerWindowClass();
+        createWindow();
+        
+        SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
+    }
+
+    // Constructor with Rect (position + size)
+    Window(const char* title, Rect<int> bounds) 
+        : m_size(bounds.w, bounds.h), m_position(bounds.x, bounds.y), m_title(title) {
+        m_hInstance = GetModuleHandle(nullptr);
+        registerWindowClass();
+        createWindow();
+        
         SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
     }
 
@@ -34,7 +55,7 @@ public:
     // Move constructor and assignment
     Window(Window&& other) noexcept 
         : m_hwnd(other.m_hwnd), m_hInstance(other.m_hInstance), 
-          m_width(other.m_width), m_height(other.m_height), 
+          m_size(other.m_size), m_position(other.m_position),
           m_title(std::move(other.m_title)) {
         other.m_hwnd = nullptr;
         other.m_hInstance = nullptr;
@@ -48,8 +69,8 @@ public:
             destroy();
             m_hwnd = other.m_hwnd;
             m_hInstance = other.m_hInstance;
-            m_width = other.m_width;
-            m_height = other.m_height;
+            m_size = other.m_size;
+            m_position = other.m_position;
             m_title = std::move(other.m_title);
             
             other.m_hwnd = nullptr;
@@ -89,27 +110,48 @@ public:
         return m_hwnd;
     }
 
-    // Get window properties
-    int width() const { return m_width; }
-    int height() const { return m_height; }
+    // Get window properties - legacy methods
+    int width() const { return m_size.x; }
+    int height() const { return m_size.y; }
     const std::string& title() const { return m_title; }
 
-    // Set window properties
+    // Get window properties - z_unit methods
+    Vec2<int> size() const { return m_size; }
+    Vec2<int> position() const { return m_position; }
+    Rect<int> bounds() const { return Rect<int>(m_position.x, m_position.y, m_size.x, m_size.y); }
+
+    // Set window properties - legacy methods
     void setTitle(const char* title) {
         m_title = title;
         SetWindowText(m_hwnd, title);
     }
 
     void setSize(int width, int height) {
-        m_width = width;
-        m_height = height;
-        SetWindowPos(m_hwnd, nullptr, 0, 0, width, height, 
-                    SWP_NOMOVE | SWP_NOZORDER);
+        setSize(Vec2<int>(width, height));
     }
 
     void setPosition(int x, int y) {
-        SetWindowPos(m_hwnd, nullptr, x, y, 0, 0, 
+        setPosition(Vec2<int>(x, y));
+    }
+
+    // Set window properties - z_unit methods
+    void setSize(Vec2<int> newSize) {
+        m_size = newSize;
+        SetWindowPos(m_hwnd, nullptr, 0, 0, m_size.x, m_size.y, 
+                    SWP_NOMOVE | SWP_NOZORDER);
+    }
+
+    void setPosition(Vec2<int> newPosition) {
+        m_position = newPosition;
+        SetWindowPos(m_hwnd, nullptr, m_position.x, m_position.y, 0, 0, 
                     SWP_NOSIZE | SWP_NOZORDER);
+    }
+
+    void setBounds(Rect<int> newBounds) {
+        m_size = Vec2<int>(newBounds.w, newBounds.h);
+        m_position = Vec2<int>(newBounds.x, newBounds.y);
+        SetWindowPos(m_hwnd, nullptr, m_position.x, m_position.y, 
+                    m_size.x, m_size.y, SWP_NOZORDER);
     }
 
     // Event handling - SDL3 style
@@ -146,12 +188,26 @@ public:
         return m_hwnd != nullptr && IsWindow(m_hwnd);
     }
 
-    // Get client area size
+    // Get client area size - legacy method
     void getClientSize(int& width, int& height) const {
         RECT rect;
         GetClientRect(m_hwnd, &rect);
         width = rect.right - rect.left;
         height = rect.bottom - rect.top;
+    }
+
+    // Get client area size - z_unit method
+    Vec2<int> getClientSize() const {
+        RECT rect;
+        GetClientRect(m_hwnd, &rect);
+        return Vec2<int>(rect.right - rect.left, rect.bottom - rect.top);
+    }
+
+    // Get client area bounds
+    Rect<int> getClientBounds() const {
+        RECT rect;
+        GetClientRect(m_hwnd, &rect);
+        return Rect<int>(0, 0, rect.right - rect.left, rect.bottom - rect.top);
     }
 
     // Center window on screen
@@ -164,16 +220,40 @@ public:
         int windowWidth = rect.right - rect.left;
         int windowHeight = rect.bottom - rect.top;
         
-        int x = (screenWidth - windowWidth) / 2;
-        int y = (screenHeight - windowHeight) / 2;
+        Vec2<int> centerPos(
+            (screenWidth - windowWidth) / 2,
+            (screenHeight - windowHeight) / 2
+        );
         
-        setPosition(x, y);
+        setPosition(centerPos);
+    }
+
+    // Check if point is inside client area
+    bool containsPoint(Vec2<int> point) const {
+        Rect<int> clientBounds = getClientBounds();
+        return point.x >= clientBounds.x && point.x < clientBounds.x + clientBounds.w &&
+               point.y >= clientBounds.y && point.y < clientBounds.y + clientBounds.h;
+    }
+
+    // Convert screen coordinates to client coordinates
+    Vec2<int> screenToClient(Vec2<int> screenPos) const {
+        POINT pt = {screenPos.x, screenPos.y};
+        ScreenToClient(m_hwnd, &pt);
+        return Vec2<int>(pt.x, pt.y);
+    }
+
+    // Convert client coordinates to screen coordinates
+    Vec2<int> clientToScreen(Vec2<int> clientPos) const {
+        POINT pt = {clientPos.x, clientPos.y};
+        ClientToScreen(m_hwnd, &pt);
+        return Vec2<int>(pt.x, pt.y);
     }
 
 private:
     HWND m_hwnd = nullptr;
     HINSTANCE m_hInstance = nullptr;
-    int m_width, m_height;
+    Vec2<int> m_size;
+    Vec2<int> m_position;
     std::string m_title;
     bool m_shouldClose = false;
     std::queue<Event> m_eventQueue;
@@ -218,8 +298,11 @@ private:
                 return 0;
 
             case WM_SIZE:
-                m_width = LOWORD(lp);
-                m_height = HIWORD(lp);
+                m_size = Vec2<int>(LOWORD(lp), HIWORD(lp));
+                break;
+
+            case WM_MOVE:
+                m_position = Vec2<int>(LOWORD(lp), HIWORD(lp));
                 break;
 
             case WM_PAINT: {
@@ -262,19 +345,23 @@ private:
 
     void createWindow() {
         // Calculate window size to get desired client area
-        RECT rect = { 0, 0, m_width, m_height };
+        RECT rect = { 0, 0, m_size.x, m_size.y };
         AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
         
         int windowWidth = rect.right - rect.left;
         int windowHeight = rect.bottom - rect.top;
+
+        // Use position if set, otherwise use default
+        int x = (m_position.x != 0) ? m_position.x : CW_USEDEFAULT;
+        int y = (m_position.y != 0) ? m_position.y : CW_USEDEFAULT;
 
         m_hwnd = CreateWindowEx(
             0,                          // Extended style
             CLASS_NAME,                 // Class name
             m_title.c_str(),           // Window title
             WS_OVERLAPPEDWINDOW,       // Window style
-            CW_USEDEFAULT,             // X position
-            CW_USEDEFAULT,             // Y position
+            x,                         // X position
+            y,                         // Y position
             windowWidth,               // Width
             windowHeight,              // Height
             nullptr,                   // Parent window
@@ -286,6 +373,13 @@ private:
         if (!m_hwnd) {
             DWORD error = GetLastError();
             throw std::runtime_error("Failed to create window. Error: " + std::to_string(error));
+        }
+
+        // Update actual position after creation
+        if (x == CW_USEDEFAULT || y == CW_USEDEFAULT) {
+            RECT winRect;
+            GetWindowRect(m_hwnd, &winRect);
+            m_position = Vec2<int>(winRect.left, winRect.top);
         }
     }
 
