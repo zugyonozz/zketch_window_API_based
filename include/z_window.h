@@ -34,8 +34,7 @@ public:
     }
 
     // Constructor with Rect (position + size)
-    Window(const char* title, Rect<int> bounds) 
-        : m_size(bounds.w, bounds.h), m_position(bounds.x, bounds.y), m_title(title) {
+    Window(const char* title, Rect<int> bounds) : m_size(bounds.w, bounds.h), m_position(bounds.x, bounds.y), m_title(title) {
         m_hInstance = GetModuleHandle(nullptr);
         registerWindowClass();
         createWindow();
@@ -76,9 +75,8 @@ public:
             other.m_hwnd = nullptr;
             other.m_hInstance = nullptr;
             
-            if (m_hwnd) {
+            if (m_hwnd) 
                 SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
-            }
         }
         return *this;
     }
@@ -231,8 +229,7 @@ public:
     // Check if point is inside client area
     bool containsPoint(Vec2<int> point) const {
         Rect<int> clientBounds = getClientBounds();
-        return point.x >= clientBounds.x && point.x < clientBounds.x + clientBounds.w &&
-               point.y >= clientBounds.y && point.y < clientBounds.y + clientBounds.h;
+        return point.x >= clientBounds.x && point.x < clientBounds.x + clientBounds.w && point.y >= clientBounds.y && point.y < clientBounds.y + clientBounds.h;
     }
 
     // Convert screen coordinates to client coordinates

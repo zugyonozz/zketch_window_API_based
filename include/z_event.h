@@ -58,7 +58,7 @@ struct Event {
 
     // Convenience methods for resize events
     Vec2<int> getResizeSize() const {
-        return (type == EventType::Resize) ? resize.size() : Vec2<int>(0, 0);
+        return (type == EventType::Resize) ? resize.size() : Vec2<int>(0);
     }
 
     void setResizeSize(Vec2<int> newSize) {
